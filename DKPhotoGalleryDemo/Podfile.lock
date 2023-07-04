@@ -1,49 +1,45 @@
 PODS:
-  - DKPhotoGallery (0.0.16):
-    - DKPhotoGallery/Core (= 0.0.16)
-    - DKPhotoGallery/Model (= 0.0.16)
-    - DKPhotoGallery/Preview (= 0.0.16)
-    - DKPhotoGallery/Resource (= 0.0.16)
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Core (0.0.16):
+  - DKPhotoGallery (0.0.6):
+    - DKPhotoGallery/Core (= 0.0.6)
+    - DKPhotoGallery/Model (= 0.0.6)
+    - DKPhotoGallery/Preview (= 0.0.6)
+    - DKPhotoGallery/Resource (= 0.0.6)
+    - SDWebImage/GIF
+  - DKPhotoGallery/Core (0.0.6):
     - DKPhotoGallery/Model
     - DKPhotoGallery/Preview
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Model (0.0.16):
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Preview (0.0.16):
+    - SDWebImage/GIF
+  - DKPhotoGallery/Model (0.0.6):
+    - SDWebImage/GIF
+  - DKPhotoGallery/Preview (0.0.6):
     - DKPhotoGallery/Model
     - DKPhotoGallery/Resource
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Resource (0.0.16):
-    - SDWebImage
-    - SwiftyGif
-  - SDWebImage (5.8.0):
-    - SDWebImage/Core (= 5.8.0)
-  - SDWebImage/Core (5.8.0)
-  - SwiftyGif (5.3.0)
+    - SDWebImage/GIF
+  - DKPhotoGallery/Resource (0.0.6):
+    - SDWebImage/GIF
+  - FLAnimatedImage (1.0.12)
+  - SDWebImage/Core (4.4.1)
+  - SDWebImage/GIF (4.4.1):
+    - FLAnimatedImage (~> 1.0)
+    - SDWebImage/Core
 
 DEPENDENCIES:
   - DKPhotoGallery (from `../`)
 
 SPEC REPOS:
-  trunk:
+  https://github.com/CocoaPods/Specs.git:
+    - FLAnimatedImage
     - SDWebImage
-    - SwiftyGif
 
 EXTERNAL SOURCES:
   DKPhotoGallery:
     :path: "../"
 
 SPEC CHECKSUMS:
-  DKPhotoGallery: 1a594b53aca51f5def7ba70666632a4276b7e770
-  SDWebImage: 84000f962cbfa70c07f19d2234cbfcf5d779b5dc
-  SwiftyGif: e466e86c660d343357ab944a819a101c4127cb40
+  DKPhotoGallery: 770a5b3e2729aeb7b113bec7fc5ec9db4922773b
+  FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
+  SDWebImage: 47e9b5b925cbce75946c23f0c42dd19464189af4
 
-PODFILE CHECKSUM: a473ad59ee5f797d3db4f4e5c10e3addc401c09b
+PODFILE CHECKSUM: 5d73f49af17d8def99de6a78b51da88d5397f19a
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.5.0

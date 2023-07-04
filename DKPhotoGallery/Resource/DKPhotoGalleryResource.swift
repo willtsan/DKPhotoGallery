@@ -21,7 +21,7 @@ public class DKPhotoGalleryResource {
                                            comment: "")
     }
     
-    @objc public static var customLocalizationBlock: ((_ title: String) -> String?)?
+    public static var customLocalizationBlock: ((_ title: String) -> String?)?
 
     // MARK: - Images
     
@@ -57,9 +57,9 @@ public class DKPhotoGalleryResource {
     
     private class func imageForResource(_ name: String) -> UIImage {
         let bundle = Bundle.photoGalleryResourceBundle()
-        let image = UIImage(named: name, in: bundle, compatibleWith: nil) ?? UIImage()
-
-        return image
+        let imagePath = bundle.path(forResource: name, ofType: "png", inDirectory: "Images")
+        let image = UIImage(contentsOfFile: imagePath!)
+        return image!
     }
     
     private class func stretchImgFromMiddle(_ image: UIImage) -> UIImage {
@@ -73,12 +73,8 @@ public class DKPhotoGalleryResource {
 private extension Bundle {
     
     class func photoGalleryResourceBundle() -> Bundle {
-        #if SWIFT_PACKAGE
-            return Bundle.module
-        #else
-            let assetPath = Bundle(for: DKPhotoGalleryResource.self).resourcePath!
-            return Bundle(path: (assetPath as NSString).appendingPathComponent("DKPhotoGallery.bundle"))!
-        #endif
+        let assetPath = Bundle(for: DKPhotoGalleryResource.self).resourcePath!
+        return Bundle(path: (assetPath as NSString).appendingPathComponent("DKPhotoGallery.bundle"))!
     }
     
 }

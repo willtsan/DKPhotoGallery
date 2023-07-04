@@ -6,9 +6,9 @@
 //  Copyright © 2017 ZhangAo. All rights reserved.
 //
 
-import UIKit
+import FLAnimatedImage
 
-open class DKPhotoImageView: UIImageView {
+open class DKPhotoImageView: FLAnimatedImageView {
     
     public override init(image: UIImage? = nil, highlightedImage: UIImage? = nil) {
         super.init(image: image, highlightedImage: highlightedImage)

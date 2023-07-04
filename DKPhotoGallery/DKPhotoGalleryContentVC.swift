@@ -110,13 +110,7 @@ open class DKPhotoGalleryContentVC: UIViewController, UIScrollViewDelegate {
         self.mainView.frame = CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.view.bounds.height)
         self.mainView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.mainView.delegate = self
-        
-        #if swift(>=4.2)
         self.mainView.decelerationRate = UIScrollView.DecelerationRate.fast
-        #else
-        self.mainView.decelerationRate = UIScrollViewDecelerationRateFast
-        #endif
-        
         self.mainView.set(totalCount: self.dataSource.numberOfItems())
         self.view.addSubview(self.mainView)
         
@@ -258,18 +252,15 @@ open class DKPhotoGalleryContentVC: UIViewController, UIScrollViewDelegate {
             self.showViewIfNeeded(at: index)
         } else {
             var visibleItems = [DKPhotoGalleryItem : Int]()
-            for visibleIndex in max(index - 1, 0) ... min(index + 1, self.dataSource.numberOfItems() - 1) {
-                let item = self.dataSource.item(for: visibleIndex)
-                visibleItems[item] = visibleIndex
+            for index in max(index - 1, 0) ... min(index + 1, self.dataSource.numberOfItems() - 1) {
+                let item = self.dataSource.item(for: index)
+                visibleItems[item] = index
             }
-            
-            let currentItem = self.dataSource.item(for: index)
+
             for (visibleItem, visibleVC) in self.visibleVCs {
                 if visibleItems[visibleItem] == nil {
                     visibleVC.photoPreviewWillDisappear()
                     self.addToReuseQueueFromVisibleQueueIfNeeded(item: visibleItem)
-                } else if (visibleItem != currentItem) {
-                    visibleVC.photoPreviewWillDisappear()
                 }
             }
 
@@ -289,11 +280,7 @@ open class DKPhotoGalleryContentVC: UIViewController, UIScrollViewDelegate {
         if self.visibleVCs[item] == nil {
             let vc = self.previewVC(for: item)
             if vc.parent != self {
-                #if swift(>=4.2)
                 self.addChild(vc)
-                #else
-                self.addChildViewController(vc)
-                #endif
             }
             self.mainView.set(vc: vc, item: item, atIndex: index)
         }

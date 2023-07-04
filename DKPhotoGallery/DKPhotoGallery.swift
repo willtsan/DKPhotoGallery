@@ -50,7 +50,6 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
     
     @objc open var presentingFromImageView: UIImageView?
     @objc open var presentationIndex = 0
-    @objc open var leftBarButtonItemColor : UIColor = UIColor.white
     
     @objc open var singleTapMode = DKPhotoGallerySingleTapMode.toggleControlView
     
@@ -94,16 +93,9 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
             strongSelf.galleryDelegate?.photoGallery?(strongSelf, didShow: index)
         }
         
-        #if swift(>=4.2)
         contentVC.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.cancel,
                                                                      target: self,
                                                                      action: #selector(DKPhotoGallery.dismissGallery))
-        #else
-        contentVC.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.cancel,
-                                                                     target: self,
-                                                                     action: #selector(DKPhotoGallery.dismissGallery))
-        #endif
-        contentVC.navigationItem.leftBarButtonItem?.tintColor = self.leftBarButtonItemColor
         
         contentVC.dataSource = self
         contentVC.delegate = self
@@ -111,12 +103,10 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
         
         contentVC.footerView = self.footerView
         
-        if #available(iOS 13.0, *) {} else {
-            let keyData = Data([0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x42, 0x61, 0x72])
-            let key = String(data: keyData, encoding: String.Encoding.ascii)!
-            if let statusBar = UIApplication.shared.value(forKey: key) as? UIView {
-                self.statusBar = statusBar
-            }            
+        let keyData = Data(bytes: [0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x42, 0x61, 0x72])
+        let key = String(data: keyData, encoding: String.Encoding.ascii)!
+        if let statusBar = UIApplication.shared.value(forKey: key) as? UIView {
+            self.statusBar = statusBar
         }
     }
     
@@ -147,14 +137,18 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
         super.viewWillAppear(animated)
         
         self.doSetupOnce()
-                
+        
+        UIApplication.shared.statusBarStyle = DKPhotoGallery._preferredStatusBarStyle
+        
         self.modalPresentationCapturesStatusBarAppearance = true
         self.setNeedsStatusBarAppearanceUpdate()
     }
     
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-                
+        
+        UIApplication.shared.statusBarStyle = self.defaultStatusBarStyle
+        
         self.modalPresentationCapturesStatusBarAppearance = false
         self.setNeedsStatusBarAppearanceUpdate()
     }
@@ -226,6 +220,7 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
         }
     }
     
+    @available(iOS 9.0, *)
     open override var previewActionItems: [UIPreviewActionItem] {
         return self.contentVC!.currentVC.previewActionItems
     }
@@ -441,7 +436,7 @@ DKPhotoGalleryContentDataSource, DKPhotoGalleryContentDelegate {
 
 public extension UIViewController {
     
-    @objc func present(photoGallery gallery: DKPhotoGallery, completion: (() -> Swift.Void)? = nil) {
+    @objc public func present(photoGallery gallery: DKPhotoGallery, completion: (() -> Swift.Void)? = nil) {
         gallery.modalPresentationStyle = .custom
         
         gallery.transitionController = DKPhotoGalleryTransitionController(gallery: gallery,

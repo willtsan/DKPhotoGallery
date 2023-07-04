@@ -8,10 +8,7 @@
 
 import UIKit
 import Photos
-
-#if canImport(SDWebImage)
 import SDWebImage
-#endif
 
 class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
 
@@ -126,18 +123,18 @@ class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
         DKPhotoImagePreviewVC.ioQueue.async {
             let key = URL.absoluteString
             
-            var image = SDImageCache.shared.imageFromMemoryCache(forKey: key)
+            var image = SDImageCache.shared().imageFromMemoryCache(forKey: key)
             if image == nil {
                 do {
                     let data = try Data(contentsOf: URL)
                     if NSData.sd_imageFormat(forImageData: data) == .GIF {
-                        SDImageCache.shared.store(nil, imageData: data, forKey: key, toDisk: false, completion: nil)
+                        SDImageCache.shared().store(nil, imageData: data, forKey: key, toDisk: false, completion: nil)
                         
                         completeBlock(data, nil)
                     } else if let compressedImage = UIImage.sd_image(with: data) {
                         image = compressedImage.decompress()
                         
-                        SDImageCache.shared.store(image, forKey: key, toDisk: false, completion: nil)
+                        SDImageCache.shared().store(image, forKey: key, toDisk: false, completion: nil)
                         
                         completeBlock(image, nil)
                     } else {
@@ -169,7 +166,8 @@ class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
             assertionFailure()
         }
         
-        SDImageCache.shared.queryCacheOperation(forKey: key, options: SDImageCacheOptions.scaleDownLargeImages.union(.queryMemoryData)) { (image, data, cacheType) in
+        // SDWebImage 4.4.0: SDImageCacheScaleDownLargeImages   1 << 2
+        SDImageCache.shared().queryCacheOperation(forKey: key, options: SDImageCacheOptions(rawValue: 1 << 2).union(.queryDataWhenInMemory)) { (image, data, cacheType) in
             if image != nil || data != nil {
                 if NSData.sd_imageFormat(forImageData: data) == .GIF {
                     completeBlock(data ?? image, nil)
@@ -181,7 +179,7 @@ class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
                     progressBlock(progress)
                 }, completeBlock: { (image, data, error) in
                     if error == nil {
-                        SDImageCache.shared.store(image, imageData: data, forKey: key, toDisk: true, completion: nil)
+                        SDImageCache.shared().store(image, imageData: data, forKey: key, toDisk: true, completion: nil)
                         
                         completeBlock(data ?? image, nil)
                     } else {
@@ -236,15 +234,15 @@ class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
         
         if let downloadURL = self.downloadURL {
             if let extraInfo = self.item.extraInfo, let originalURL = extraInfo[DKPhotoGalleryItemExtraInfoKeyRemoteImageOriginalURL] as? URL {
-                SDImageCache.shared.queryCacheOperation(forKey: originalURL.absoluteString,
-                                                        options: .scaleDownLargeImages) { (image, data, _) in
-                                                            if image != nil || data != nil {
-                                                                self.downloadURL = originalURL
-                                                            }
-                                                            
-                                                            if let downloadURL = self.downloadURL {
-                                                                self.asyncFetchImage(with: downloadURL, progressBlock: checkProgressBlock, completeBlock: checkCompleteBlock)
-                                                            }
+                // SDWebImage 4.4.0: SDImageCacheScaleDownLargeImages   1 << 2
+                SDImageCache.shared().queryCacheOperation(forKey: originalURL.absoluteString, options: SDImageCacheOptions(rawValue: 1 << 2)) { (image, data, _) in
+                    if image != nil || data != nil {
+                        self.downloadURL = originalURL
+                    }
+                    
+                    if let downloadURL = self.downloadURL {
+                        self.asyncFetchImage(with: downloadURL, progressBlock: checkProgressBlock, completeBlock: checkCompleteBlock)
+                    }
                 }
             } else {
                 self.asyncFetchImage(with: downloadURL, progressBlock: checkProgressBlock, completeBlock: checkCompleteBlock)
@@ -264,7 +262,7 @@ class DKPhotoImagePreviewVC: DKPhotoBaseImagePreviewVC {
                 self.downloadOriginalImageButton.isHidden = true
             } else {
                 let reuseIdentifier = self.reuseIdentifier
-                SDImageCache.shared.queryCacheOperation(forKey: originalURL.absoluteString) { [weak self] (image, data, _) in
+                SDImageCache.shared().queryCacheOperation(forKey: originalURL.absoluteString) { [weak self] (image, data, _) in
                     guard reuseIdentifier == self?.reuseIdentifier else { return }
                     
                     if image != nil || data != nil {

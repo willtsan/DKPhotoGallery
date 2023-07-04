@@ -8,7 +8,8 @@
 
 import UIKit
 import Photos
-import SwiftyGif
+import AssetsLibrary
+import FLAnimatedImage
 
 open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
 
@@ -17,7 +18,7 @@ open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
     private func detectStringFromImage() -> String? {
         guard let contentView = self.contentView as? DKPhotoImageView else { return nil }
         
-        guard let targetImage = contentView.image  else {
+        guard let targetImage = contentView.image ?? contentView.animatedImage?.posterImage else {
             return nil
         }
         
@@ -61,25 +62,18 @@ open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
     private func saveImageToAlbum() {
         guard let contentView = self.contentView as? DKPhotoImageView else { return }
         
-        func saveImage(with imageData: Data) {
-            PHPhotoLibrary.shared().performChanges({
-                let assetRequest = PHAssetCreationRequest.forAsset()
-                assetRequest.addResource(with: .photo, data: imageData, options: nil)
-            }) { (success, error) in
-                DispatchQueue.main.async(execute: {
-                    self.showImageSaveResult(with: error)
-                })
-            }
-        }
-        
         PHPhotoLibrary.requestAuthorization { (status) in
             DispatchQueue.main.async(execute: {
                 switch status {
                 case .authorized:
-                    if let imageData = contentView.gifImage?.imageData {
-                        saveImage(with: imageData)
+                    if let animatedImage = contentView.animatedImage {
+                        ALAssetsLibrary().writeImageData(toSavedPhotosAlbum: animatedImage.data, metadata: nil, completionBlock: { (newURL, error) in
+                            self.showImageSaveResult(with: error)
+                        })
                     } else if let imageURL = self.item.imageURL, imageURL.isFileURL, let data = try? Data(contentsOf: imageURL) {
-                        saveImage(with: data)
+                        ALAssetsLibrary().writeImageData(toSavedPhotosAlbum: data, metadata: [:], completionBlock: { (newURL, error) in
+                            self.showImageSaveResult(with: error)
+                        })
                     } else if let image = contentView.image {
                         UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.image(_:didFinishSavingWithError:contextInfo:)), nil)
                     }
@@ -118,8 +112,8 @@ open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
         
         if let data = content as? Data {
             let imageFormat = NSData.sd_imageFormat(forImageData: data)
-            if imageFormat == .GIF, let gifImage = try? UIImage(gifData: data) {
-                contentView.setGifImage(gifImage)
+            if imageFormat == .GIF {
+                contentView.animatedImage = FLAnimatedImage(gifData: data)
             } else {
                 contentView.image = UIImage(data: data)
             }
@@ -134,6 +128,8 @@ open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
         if let contentView = self.contentView as? DKPhotoImageView {
             if let image = contentView.image {
                 return image
+            } else if contentView.animatedImage != nil {
+                return contentView.currentFrame
             } else {
                 return self.item.thumbnail
             }
@@ -160,13 +156,14 @@ open class DKPhotoBaseImagePreviewVC: DKPhotoBasePreviewVC {
         
         if let image = contentView.image {
             return image.size
-        } else if let animatedImage = contentView.currentImage {
+        } else if let animatedImage = contentView.animatedImage {
             return animatedImage.size
         } else {
             return CGSize.zero
         }
     }
     
+    @available(iOS 9.0, *)
     public override func defaultPreviewActions() -> [UIPreviewActionItem] {
         let saveActionItem = UIPreviewAction(title: DKPhotoGalleryResource.localizedStringWithKey("preview.3DTouch.saveImage.title"),
                                              style: .default) { (action, previewViewController) in
